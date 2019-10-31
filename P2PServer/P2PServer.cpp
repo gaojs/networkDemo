@@ -17,7 +17,7 @@ CPeerList  g_PeerList;				// 客户列表
 CRITICAL_SECTION g_PeerListLock;	// 同步对客户列表的访问
 SOCKET g_s;							// UDP套节字
 
-void main()
+int main()
 {
 	// 创建套节字，绑定到本地端口
 	g_s = ::WSASocket(AF_INET, 
@@ -29,7 +29,7 @@ void main()
 	if(::bind(g_s, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
 	{
 		printf(" bind() failed %d \n", ::WSAGetLastError());
-		return;
+		return 2;
 	}
 
 	///////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ void main()
 
 	::InitializeCriticalSection(&g_PeerListLock);
 	HANDLE hThread = ::CreateThread(NULL, 0, IOThreadProc, NULL, 0, NULL);
-
+	if (hThread == 0 || hThread == INVALID_HANDLE_VALUE) return 1;
 	// 定时向客户方发送“询问”消息，删除不响应的用户
 	while(TRUE)
 	{
@@ -63,7 +63,7 @@ void main()
 		{
 			CP2PMessage queryMsg;
 			queryMsg.nMessageType = USERACTIVEQUERY;
-			DWORD dwTick = ::GetTickCount();
+			ULONGLONG dwTick = ::GetTickCount64();
 			for(int i=0; i<g_PeerList.m_nCurrentSize; i++)
 			{
 				if(dwTick - g_PeerList.m_pPeer[i].dwLastActiveTime >= 2*15*1000 + 600) 
@@ -99,6 +99,7 @@ void main()
 	::DeleteCriticalSection(&g_PeerListLock);
 	::CloseHandle(hThread);
 	::closesocket(g_s);
+	return 0;
 }
 
 
@@ -129,7 +130,7 @@ DWORD WINAPI IOThreadProc(LPVOID lpParam)
 				pMsg->peer.addr[pMsg->peer.AddrNum].dwIp = remoteAddr.sin_addr.S_un.S_addr;
 				pMsg->peer.addr[pMsg->peer.AddrNum].nPort = ntohs(remoteAddr.sin_port);
 				pMsg->peer.AddrNum ++;
-				pMsg->peer.dwLastActiveTime = ::GetTickCount();
+				pMsg->peer.dwLastActiveTime = ::GetTickCount64();
 				
 
 				// 将用户信息保存到用户列表中
@@ -204,7 +205,7 @@ DWORD WINAPI IOThreadProc(LPVOID lpParam)
 				PEER_INFO *pInfo = g_PeerList.GetAPeer(pMsg->peer.szUserName);
 				if(pInfo != NULL)
 				{
-					pInfo->dwLastActiveTime = ::GetTickCount();
+					pInfo->dwLastActiveTime = ::GetTickCount64();
 				}
 				::LeaveCriticalSection(&g_PeerListLock);
 			}

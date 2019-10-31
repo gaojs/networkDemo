@@ -21,7 +21,11 @@ CP2PClient::CP2PClient()
 	// 初始化WS2_32.dll
 	WSADATA wsaData;
 	WORD sockVersion = MAKEWORD(2, 2);
-	::WSAStartup(sockVersion, &wsaData);
+	int nRet =::WSAStartup(sockVersion, &wsaData);
+	if (nRet != 0)
+	{
+		printf("WSAStartup() nRet=%d", nRet);
+	}
 }
 
 CP2PClient::~CP2PClient()
@@ -218,7 +222,7 @@ BOOL CP2PClient::SendText(char *pszUserName, char *pszText, int nTextLen)
 			sizeof(CP2PMessage) + MAX_USERNAME, 0, (sockaddr*)&serverAddr, sizeof(serverAddr));
 
 		// 等待对方的P2PCONNECTACK消息
-		for(j=0; j<10; j++)
+		for(int j=0; j<10; j++)
 		{
 			if(pInfo->p2pAddr.dwIp != 0)
 				break;

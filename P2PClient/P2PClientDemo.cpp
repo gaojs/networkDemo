@@ -1,12 +1,10 @@
 //////////////////////////////////////////////////////////
 // P2PClient.cpp文件
-
-
-
 #include <winsock2.h>
-#include <stdio.h>
-#include "p2pclient.h"
+#include <iostream>
+using namespace std;
 
+#include "p2pclient.h"
 class CMyP2P : public CP2PClient
 {
 public:
@@ -18,27 +16,27 @@ public:
 	}
 };
 
-void main()
+int main()
 {	
 	CMyP2P client;
 	if(!client.Init(0))
 	{
 		printf(" CP2PClient::Init() failed \n");
-		return ;
+		return 1;
 	}
 
 	// 获取服务器IP地址和用户名
 	char szServerIp[20];
 	char szUserName[MAX_USERNAME];
 	printf(" Please input server ip: ");
-	gets(szServerIp);
+	cin>>szServerIp;
 	printf(" Please input your name: ");
-	gets(szUserName);
+	cin >>szUserName;
 	// 登陆服务器
 	if(!client.Login(szUserName, szServerIp))
 	{
 		printf(" CP2PClient::Login() failed \n");
-		return ;
+		return 2;
 	}
 	// 第一次登陆，首先更新用户列表
 	client.GetUserList();
@@ -49,7 +47,7 @@ void main()
 	char szCommandLine[256];
 	while(TRUE)
 	{
-		gets(szCommandLine);
+		cin>>szCommandLine;
 		if(strlen(szCommandLine) < 4)
 			continue;
 
@@ -57,7 +55,7 @@ void main()
 		char szCommand[10];
 		strncpy(szCommand, szCommandLine, 4);
 		szCommand[4] = '\0';
-		if(stricmp(szCommand, "getu") == 0)
+		if(_stricmp(szCommand, "getu") == 0)
 		{
 			// 获取用户列表
 			if(client.GetUserList())
@@ -67,7 +65,8 @@ void main()
 				{
 					PEER_INFO *pInfo = &client.m_PeerList.m_pPeer[i];
 					printf(" Username: %s(%s:%ld) \n", pInfo->szUserName, 
-						::inet_ntoa(*((in_addr*)&pInfo->addr[pInfo->AddrNum -1].dwIp)), pInfo->addr[pInfo->AddrNum - 1].nPort);
+						::inet_ntoa(*((in_addr*)&pInfo->addr[pInfo->AddrNum -1].dwIp)), 
+						pInfo->addr[pInfo->AddrNum - 1].nPort);
 				}
 			}
 			else
@@ -76,11 +75,12 @@ void main()
 			}
 		}
 
-		else if(stricmp(szCommand, "send") == 0)
+		else if(_stricmp(szCommand, "send") == 0)
 		{
 			// 解析出对方用户名
 			char szPeer[MAX_USERNAME];
-			for(int i=5;;i++)
+			int i = 0;
+			for(i=5;;i++)
 			{
 				if(szCommandLine[i] != ' ')
 					szPeer[i-5] = szCommandLine[i];
@@ -102,10 +102,11 @@ void main()
 				printf(" Send Failure! \n");
 			
 		}
-		else if(stricmp(szCommand, "exit") == 0)
+		else if(_stricmp(szCommand, "exit") == 0)
 		{
 			break;
 		}
 	}
+	return 0;
 }
 

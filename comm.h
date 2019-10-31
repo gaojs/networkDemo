@@ -23,11 +23,11 @@ struct ADDR_INFO
 // 一个节点信息
 struct PEER_INFO
 {
-	char szUserName[MAX_USERNAME];	 // 用户名
-	ADDR_INFO addr[MAX_ADDR_NUMBER]; // 由节点的私有终端和公共终端组成的数组
-	u_char AddrNum;					 // addr数组元素数量
-	ADDR_INFO p2pAddr;				 // P2P通信时应使用的地址（客户方使用）
-	DWORD dwLastActiveTime;			 // 记录此用户的活动时间（服务器使用）
+	char szUserName[MAX_USERNAME+1];	 // 用户名
+	ADDR_INFO addr[MAX_ADDR_NUMBER+1]; // 由节点的私有终端和公共终端组成的数组
+	u_char AddrNum;					// addr数组元素数量
+	ADDR_INFO p2pAddr;				// P2P通信时应使用的地址（客户方使用）
+	ULONGLONG dwLastActiveTime;		// 记录此用户的活动时间（服务器使用）
 };
 
 // 通信消息格式
