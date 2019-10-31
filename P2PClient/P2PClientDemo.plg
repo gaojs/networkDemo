@@ -1,0 +1,38 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: P2PClientDemo - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP3.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/P2PClientDemo.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"F:\windows网络与通信_源代码\新配套光盘\第10章\comm.cpp"
+"F:\windows网络与通信_源代码\新配套光盘\第10章\P2PClientDemo\P2PClient.cpp"
+"F:\windows网络与通信_源代码\新配套光盘\第10章\P2PClientDemo\P2PClientDemo.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP3.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP4.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/P2PClientDemo.pdb" /debug /machine:I386 /out:"Debug/P2PClientDemo.exe" /pdbtype:sept 
+".\Debug\comm.obj"
+".\Debug\P2PClient.obj"
+".\Debug\P2PClientDemo.obj"
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP4.tmp"
+<h3>Output Window</h3>
+Compiling...
+comm.cpp
+P2PClient.cpp
+P2PClientDemo.cpp
+Linking...
+
+
+
+<h3>Results</h3>
+P2PClientDemo.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>
