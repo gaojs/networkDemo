@@ -15,6 +15,7 @@ DWORD WINAPI IOThreadProc(LPVOID lpParam)
 	CP2PMessage* pMsg = (CP2PMessage*)buff;
 	sockaddr_in remoteAddr = { 0 };
 	int nRecv, nAddrLen = sizeof(remoteAddr);
+	printf(" IOThreadProc() ThreadId = %d \n", GetCurrentThreadId());
 	while (TRUE)
 	{
 		nRecv = ::recvfrom(g_s, buff, MAX_PACKET_SIZE, 0,
@@ -127,6 +128,8 @@ DWORD WINAPI IOThreadProc(LPVOID lpParam)
 
 int main()
 {
+	printf(" main() ProcessId = %d \n", GetCurrentProcessId());
+	printf(" main() ThreadId = %d \n", GetCurrentThreadId());
 	// 创建套节字，绑定到本地端口
 	g_s = ::WSASocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP,
 		NULL, 0, WSA_FLAG_OVERLAPPED);
