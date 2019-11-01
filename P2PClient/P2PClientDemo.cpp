@@ -102,7 +102,7 @@ int main()
 			strcpy(szMsg, &szCommandLine[i + 1]);
 
 			// ·¢ËÍÏûÏ¢
-			if (client.SendText(szPeer, szMsg, strlen(szMsg)))
+			if (client.SendText(szPeer, szMsg, (int)strlen(szMsg)))
 			{
 				printf(" Send OK! \n");
 			}
