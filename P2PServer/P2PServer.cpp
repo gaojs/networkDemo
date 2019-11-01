@@ -21,12 +21,12 @@ DWORD WINAPI IOThreadProc(LPVOID lpParam)
 		nRecv = ::recvfrom(g_s, buff, MAX_PACKET_SIZE, 0,
 			(sockaddr*)&remoteAddr, &nAddrLen);
 		if (nRecv == SOCKET_ERROR)
-		{
+		{//接收失败，接续接收
 			printf(" recvfrom() failed \n");
 			continue;
 		}
 		if (nRecv < sizeof(CP2PMessage))
-		{
+		{//长度不够，接续接收
 			continue;
 		}
 
@@ -35,7 +35,7 @@ DWORD WINAPI IOThreadProc(LPVOID lpParam)
 		switch (pMsg->nMessageType)
 		{
 		case USER_LOG_IN: // 有用户登录			
-		{
+		{//有用户登录，就加上它
 			// 记录用户的活动时间，设置用户的公共终端信息
 			pMsg->peer.dwLastActiveTime = ::GetTickCount64();
 			pMsg->peer.addr[pMsg->peer.AddrNum].dwIp = remoteAddr.sin_addr.S_un.S_addr;
@@ -60,7 +60,7 @@ DWORD WINAPI IOThreadProc(LPVOID lpParam)
 		break;
 
 		case USER_LOG_OUT: // 有用户登出
-		{
+		{//有用户登出，就删除它
 			::EnterCriticalSection(&g_PeerListLock);
 			g_PeerList.DeleteAPeer(pMsg->peer.szUserName);
 			::LeaveCriticalSection(&g_PeerListLock);
@@ -71,14 +71,14 @@ DWORD WINAPI IOThreadProc(LPVOID lpParam)
 		break;
 
 		case GET_USER_LIST:	// 有用户请求发送用户列表
-		{
+		{//循环发送用户列表
 			printf(" sending user list information to %s (%s:%ld)... \n",
 				pMsg->peer.szUserName, ::inet_ntoa(remoteAddr.sin_addr),
 				ntohs(remoteAddr.sin_port));
 			CP2PMessage peerMsg;
 			peerMsg.nMessageType = GET_USER_LIST;
 			for (int i = 0; i < g_PeerList.m_nCurrentSize; i++)
-			{
+			{//将所有用户信息，多次发送过去
 				memcpy(&peerMsg.peer, &g_PeerList.m_pPeer[i], sizeof(PEER_INFO));
 				::sendto(g_s, (char*)&peerMsg, sizeof(CP2PMessage), 0,
 					(sockaddr*)&remoteAddr, sizeof(remoteAddr));
@@ -91,24 +91,24 @@ DWORD WINAPI IOThreadProc(LPVOID lpParam)
 		break;
 
 		case P2P_CONNECT: // 有用户请求让另一个用户向它发送打洞消息
-		{
+		{//转发用户打洞（连接）消息
 			char* pszUser = (char*)(pMsg + 1);
 			printf(" %s wants to connect to %s \n", pMsg->peer.szUserName, pszUser);
 			::EnterCriticalSection(&g_PeerListLock);
 			PEER_INFO* pInfo = g_PeerList.GetAPeer(pszUser);
 			::LeaveCriticalSection(&g_PeerListLock);
 			if (pInfo != NULL)
-			{
+			{//找到用户，就转发过去
 				remoteAddr.sin_addr.S_un.S_addr = pInfo->addr[pInfo->AddrNum - 1].dwIp;
 				remoteAddr.sin_port = htons(pInfo->addr[pInfo->AddrNum - 1].nPort);
 				::sendto(g_s, (char*)pMsg, sizeof(CP2PMessage), 0,
-					 (sockaddr*)&remoteAddr, sizeof(remoteAddr));
+					(sockaddr*)&remoteAddr, sizeof(remoteAddr));
 			}
 		}
 		break;
 
 		case USER_ACTIVE_QUERY_ACK:	// 用户对“询问”消息的应答	
-		{
+		{//用户有应答，说明用户还活着
 			printf(" recv active ack message from %s (%s:%ld) \n",
 				pMsg->peer.szUserName, ::inet_ntoa(remoteAddr.sin_addr),
 				ntohs(remoteAddr.sin_port));
@@ -150,7 +150,7 @@ int main()
 
 	///////////////////////////////////////////////////////
 	// 下面这段代码用来显示服务器绑定的终端
-	char szHost[256];
+	char szHost[256] = { 0 };
 	::gethostname(szHost, 256);
 	hostent* pHost = ::gethostbyname(szHost);
 	in_addr addr;
@@ -158,8 +158,9 @@ int main()
 	{
 		char* p = pHost->h_addr_list[i];
 		if (p == NULL)
+		{
 			break;
-
+		}
 		memcpy(&addr.S_un.S_addr, p, pHost->h_length);
 		printf(" bind to local address -> %s:%ld \n",
 			::inet_ntoa(addr), SERVER_PORT);
@@ -201,7 +202,7 @@ int main()
 					//		询问消息应该发向这个地址
 					sockaddr_in peerAddr = { 0 };
 					peerAddr.sin_family = AF_INET;
-					peerAddr.sin_addr.S_un.S_addr = g_PeerList.m_pPeer[i]						
+					peerAddr.sin_addr.S_un.S_addr = g_PeerList.m_pPeer[i]
 						.addr[g_PeerList.m_pPeer[i].AddrNum - 1].dwIp;
 					peerAddr.sin_port = htons(g_PeerList.m_pPeer[i]
 						.addr[g_PeerList.m_pPeer[i].AddrNum - 1].nPort);

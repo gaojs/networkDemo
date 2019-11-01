@@ -49,7 +49,7 @@ int main()
 	char szCommandLine[256] = { 0 };
 	while (TRUE)
 	{
-		cin >> szCommandLine;
+		cin.getline(szCommandLine, sizeof(szCommandLine));
 		if (strlen(szCommandLine) < 4)
 		{
 			continue;
@@ -59,8 +59,7 @@ int main()
 		strncpy(szCommand, szCommandLine, 4);
 		szCommand[4] = '\0';
 		if (_stricmp(szCommand, "getu") == 0)
-		{
-			// 获取用户列表
+		{// 获取用户列表
 			if (client.GetUserList())
 			{
 				printf(" Have %d users logined server: \n",
@@ -78,13 +77,11 @@ int main()
 				printf(" Get User List Failure !\n");
 			}
 		}
-
 		else if (_stricmp(szCommand, "send") == 0)
-		{
-			// 解析出对方用户名
+		{// 解析出对方用户名 send gao hello
 			char szPeer[MAX_USER_NAME] = { 0 };
-			int i = 0;
-			for (i = 5;; i++)
+			int i = 0, len = (int)strlen(szCommandLine);
+			for (i = 5; i < len; i++)
 			{
 				if (szCommandLine[i] != ' ')
 				{
@@ -96,11 +93,9 @@ int main()
 					break;
 				}
 			}
-
 			// 解析出要发送的消息
-			char szMsg[56] = { 0 };
+			char szMsg[256] = { 0 };
 			strcpy(szMsg, &szCommandLine[i + 1]);
-
 			// 发送消息
 			if (client.SendText(szPeer, szMsg, (int)strlen(szMsg)))
 			{
@@ -110,7 +105,6 @@ int main()
 			{
 				printf(" Send Failure! \n");
 			}
-
 		}
 		else if (_stricmp(szCommand, "exit") == 0)
 		{

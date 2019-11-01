@@ -97,8 +97,11 @@ BOOL CP2PClient::Init(USHORT usLocalPort)
 	// 创建接收服务线程
 	m_bThreadExit = FALSE;
 	m_hThread = ::CreateThread(NULL, 0, RecvThreadProc, this, 0, NULL);
-	int nRet = ::WaitForSingleObject(m_hThread, 1000);
-	//WAIT_TIMEOUT=258L
+	if (m_hThread != 0 && m_hThread != INVALID_HANDLE_VALUE)
+	{// 创建一个独立的接收线程；发数据在主线程中进行
+		int nRet = ::WaitForSingleObject(m_hThread, 200);
+		nRet = WAIT_OBJECT_0; //WAIT_TIMEOUT=258L
+	}
 	return TRUE;
 }
 
@@ -124,11 +127,11 @@ BOOL CP2PClient::Login(char* pszUserName, char* pszServerIp)
 	memcpy(&logMsg.peer, &m_LocalPeer, sizeof(PEER_INFO));
 
 	for (int i = 0; i < MAX_TRY_NUMBER; i++)
-	{
+	{//重试若干次
 		::sendto(m_s, (char*)&logMsg, sizeof(logMsg), 0,
 			(sockaddr*)&serverAddr, sizeof(serverAddr));
 		for (int j = 0; j < 10; j++)
-		{
+		{//等待3秒，如果收到ACK，就认为成功
 			if (m_bLogin)
 			{
 				return TRUE;
@@ -167,7 +170,7 @@ BOOL CP2PClient::SendText(char* pszUserName, char* pszText, int nTextLen)
 		return FALSE;
 	}
 	// 构建封包
-	char sendBuf[MAX_PACKET_SIZE];
+	char sendBuf[MAX_PACKET_SIZE] = { 0 };
 	CP2PMessage* pMsg = (CP2PMessage*)sendBuf;
 	pMsg->nMessageType = P2P_MESSAGE;
 	memcpy(&pMsg->peer, &m_LocalPeer, sizeof(m_LocalPeer));
@@ -175,7 +178,7 @@ BOOL CP2PClient::SendText(char* pszUserName, char* pszText, int nTextLen)
 
 	m_bMessageACK = FALSE;
 	for (int i = 0; i < MAX_TRY_NUMBER; i++)
-	{
+	{//重试若干次
 		PEER_INFO* pInfo = m_PeerList.GetAPeer(pszUserName);
 		if (pInfo == NULL)
 		{
@@ -189,12 +192,10 @@ BOOL CP2PClient::SendText(char* pszUserName, char* pszText, int nTextLen)
 			peerAddr.sin_family = AF_INET;
 			peerAddr.sin_addr.S_un.S_addr = pInfo->p2pAddr.dwIp;
 			peerAddr.sin_port = htons(pInfo->p2pAddr.nPort);
-
 			::sendto(m_s, sendBuf, nTextLen + sizeof(CP2PMessage), 0,
 				(sockaddr*)&peerAddr, sizeof(peerAddr));
-
 			for (int j = 0; j < 10; j++)
-			{
+			{//等待3秒，如果收到ACK，就认为成功
 				if (m_bMessageACK)
 				{
 					return TRUE;
@@ -206,14 +207,14 @@ BOOL CP2PClient::SendText(char* pszUserName, char* pszText, int nTextLen)
 		// 请求打洞，并且重新设置P2P地址
 		pInfo->p2pAddr.dwIp = 0;
 
-		// 构建封包
+		// 构建封包，对方的用户名跟在最后
 		char tmpBuf[sizeof(CP2PMessage) + MAX_USER_NAME];
 		CP2PMessage* p = (CP2PMessage*)tmpBuf;
 		p->nMessageType = P2P_CONNECT;
 		memcpy(&p->peer, &m_LocalPeer, sizeof(m_LocalPeer));
 		memcpy((char*)(p + 1), pszUserName, strlen(pszUserName) + 1);
 
-		// 首先直接发向目标，
+		// 首先直接发向目标，目标的所有地址都发一遍
 		sockaddr_in peerAddr = { 0 };
 		peerAddr.sin_family = AF_INET;
 		for (int j = 0; j < pInfo->AddrNum; j++)
@@ -232,11 +233,13 @@ BOOL CP2PClient::SendText(char* pszUserName, char* pszText, int nTextLen)
 		::sendto(m_s, tmpBuf, sizeof(CP2PMessage) + MAX_USER_NAME, 0,
 			(sockaddr*)&serverAddr, sizeof(serverAddr));
 
-		// 等待对方的P2PCONNECTACK消息
+		// 等待对方的P2P CONNECT ACK消息
 		for (int j = 0; j < 10; j++)
-		{
+		{//等待3秒，如果收到ACK，就认为成功
 			if (pInfo->p2pAddr.dwIp != 0)
+			{
 				break;
+			}
 			::Sleep(300);
 		}
 	}
@@ -263,20 +266,21 @@ BOOL CP2PClient::GetUserList()
 	m_bUserlistCmp = FALSE;
 	int nUserCount = 0;
 	for (int i = 0; i < MAX_TRY_NUMBER; i++)
-	{
+	{//重试若干次
 		::sendto(m_s, (char*)&msgList, sizeof(msgList), 0,
 			(sockaddr*)&serverAddr, sizeof(serverAddr));
 		do
-		{
+		{ //由于列表可能很多很多，比较耗时，所以加循环
 			nUserCount = m_PeerList.m_nCurrentSize;
 			for (int j = 0; j < 10; j++)
-			{
+			{//等待3秒，如果收到CMP，就认为成功
 				if (m_bUserlistCmp)
 				{
 					return TRUE;
 				}
 				::Sleep(300);
 			}
+			//获取到1个就继续等待，如果1个都没获取到则失败
 		} while (m_PeerList.m_nCurrentSize > nUserCount);
 	}
 	return FALSE;
@@ -306,7 +310,7 @@ DWORD WINAPI CP2PClient::RecvThreadProc(LPVOID lpParam)
 		}
 		// 首先查看是否要退出
 		if (pThis->m_bThreadExit)
-		{
+		{//主线程已退出
 			break;
 		}
 		// 调用HandleIO函数来处理这个消息
@@ -353,14 +357,16 @@ void CP2PClient::HandleIO(char* pBuf, int nBufLen,
 	}
 	break;
 
-	case P2P_CONNECT: // 一个节点请求建立P2P连接（打洞），
-	{//		可能是服务器发来的，也可能是其它节点发来的
+	// 一个节点请求建立P2P连接（打洞），
+	//	可能是服务器发来的，也可能是其它节点发来的
+	case P2P_CONNECT:
+	{
 		CP2PMessage ackMsg = { 0 };
 		ackMsg.nMessageType = P2P_CONNECT_ACK;
 		memcpy(&ackMsg.peer, &m_LocalPeer, sizeof(PEER_INFO));
 
 		if (((sockaddr_in*)addr)->sin_addr.S_un.S_addr != m_dwServerIp)
-		{// 节点发来的消息
+		{//节点发来的消息
 			::EnterCriticalSection(&m_PeerListLock);
 			PEER_INFO* pInfo = m_PeerList.GetAPeer(pMsg->peer.szUserName);
 			if (pInfo != NULL)
@@ -369,7 +375,6 @@ void CP2PClient::HandleIO(char* pBuf, int nBufLen,
 				{
 					pInfo->p2pAddr.dwIp = ((sockaddr_in*)addr)->sin_addr.S_un.S_addr;
 					pInfo->p2pAddr.nPort = ntohs(((sockaddr_in*)addr)->sin_port);
-
 					printf(" Set P2P address for %s -> %s:%ld \n", pInfo->szUserName,
 						::inet_ntoa(((sockaddr_in*)addr)->sin_addr),
 						ntohs(((sockaddr_in*)addr)->sin_port));
@@ -379,8 +384,7 @@ void CP2PClient::HandleIO(char* pBuf, int nBufLen,
 			::sendto(m_s, (char*)&ackMsg, sizeof(ackMsg), 0, addr, nAddrLen);
 		}
 		else // 服务器转发的消息
-		{
-			// 向节点的所有终端发送打洞消息
+		{//向该节点的所有地址，发送打洞的确认消息
 			sockaddr_in peerAddr = { 0 };
 			peerAddr.sin_family = AF_INET;
 			for (int i = 0; i < pMsg->peer.AddrNum; i++)
@@ -404,7 +408,6 @@ void CP2PClient::HandleIO(char* pBuf, int nBufLen,
 			{
 				pInfo->p2pAddr.dwIp = ((sockaddr_in*)addr)->sin_addr.S_un.S_addr;
 				pInfo->p2pAddr.nPort = ntohs(((sockaddr_in*)addr)->sin_port);
-
 				printf(" Set P2P address for %s -> %s:%ld \n", pInfo->szUserName,
 					::inet_ntoa(((sockaddr_in*)addr)->sin_addr),
 					ntohs(((sockaddr_in*)addr)->sin_port));
@@ -423,7 +426,7 @@ void CP2PClient::HandleIO(char* pBuf, int nBufLen,
 	}
 	break;
 
-	case GET_USER_LIST:		// 服务器发送的用户列表
+	case GET_USER_LIST: // 服务器发送的用户列表
 	{
 		// 首先清除此用户的P2P地址，再将用户信息保存到本地用户列表中
 		pMsg->peer.p2pAddr.dwIp = 0;
@@ -433,7 +436,7 @@ void CP2PClient::HandleIO(char* pBuf, int nBufLen,
 	}
 	break;
 
-	case USER_LIST_CMP:		// 用户列表传输结束
+	case USER_LIST_CMP: // 用户列表传输结束
 	{
 		m_bUserlistCmp = TRUE;
 	}
