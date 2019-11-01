@@ -27,7 +27,7 @@ int main()
 
 	// 获取服务器IP地址和用户名
 	char szServerIp[20];
-	char szUserName[MAX_USERNAME];
+	char szUserName[MAX_USER_NAME];
 	printf(" Please input server ip: ");
 	cin>>szServerIp;
 	printf(" Please input your name: ");
@@ -78,7 +78,7 @@ int main()
 		else if(_stricmp(szCommand, "send") == 0)
 		{
 			// 解析出对方用户名
-			char szPeer[MAX_USERNAME];
+			char szPeer[MAX_USER_NAME];
 			int i = 0;
 			for(i=5;;i++)
 			{
