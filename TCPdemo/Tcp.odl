@@ -1,0 +1,42 @@
+// Tcp.odl : type library source for Tcp.exe
+
+// This file will be processed by the MIDL compiler to produce the
+// type library (Tcp.tlb).
+
+[ uuid(97C63F7A-17A6-40AD-B2D3-ADBA4B3D6723), version(1.0) ]
+library Tcp
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+
+	//  Primary dispatch interface for CTcpDoc
+	
+	[ uuid(ED2CCD13-959D-4741-A411-724BFB8AAB36) ]
+	dispinterface ITcp
+	{
+		properties:
+			// NOTE - ClassWizard will maintain property information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_PROP(CTcpDlgAutoProxy)
+			//}}AFX_ODL_PROP
+			
+		methods:
+			// NOTE - ClassWizard will maintain method information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_METHOD(CTcpDlgAutoProxy)
+			//}}AFX_ODL_METHOD
+
+	};
+
+	//  Class information for CTcpDoc
+	
+	[ uuid(048872F5-B529-4615-9CD2-49E09A12A7CE) ]
+	coclass Tcp
+	{
+		[default] dispinterface ITcp;
+	};
+
+	//{{AFX_APPEND_ODL}}
+	//}}AFX_APPEND_ODL}}
+};
