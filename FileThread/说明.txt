@@ -1,0 +1,27 @@
+文件的发送和接收，都是在线程中进行的，这种做法很好。
+
+发送：void CFileThreadDlg::OnSendfile() 
+UINT ThreadProcSendFileToRemote(LPVOID pVoid)
+发送，使用了两个CSocket 
+	AfxSocketInit(NULL);	
+	CSocket sockSrvr; 
+	CSocket sockConnection;
+	sockSrvr.Create(8080); 
+	sockSrvr.Listen(); 
+	sockSrvr.Accept(sockConnection);
+		先发送文件的长度
+		cbBytesSent = sockConnection.Send( bp, cbLeftToSend );
+		再发送文件的内容，直到完毕
+		doneSoFar = sockConnection.Send( sendData + buffOffset, sendThisTime);
+	sockConnection.Close();	
+	
+接收，使用了一个CSocket 
+	AfxSocketInit(NULL);
+	CSocket sockClient;
+	sockClient.Create();
+	sockClient.Connect(ip, 8080);
+		先接收文件的长度
+		cbBytesRet = sockClient.Receive(bp, cbLeftToReceive);
+		再接收文件的内容，直到完毕
+		iiRecd = sockClient.Receive(recvData, iiGet);
+	sockClient.Close();
