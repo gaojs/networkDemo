@@ -46,20 +46,24 @@ int main()
 	/* then call WSACleanup when done using the Winsock dll */
 
 	//1
-	SOCKET sockCli;
+	SOCKET sockCli = INVALID_SOCKET;
 	sockCli = socket(AF_INET, SOCK_DGRAM, 0);
+	cout << "socket:" << sockCli << endl;
 
 	//2
-	SOCKADDR_IN addrSer;
+	SOCKADDR_IN addrSer = { 0 };
 	addrSer.sin_family = AF_INET;
 	addrSer.sin_port = htons(4040);
-	addrSer.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	addrSer.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	//addrSer.sin_addr.s_addr = htonl(INADDR_BROADCAST);
 	//客户端不用绑定
+	int nRet = 0;
 
 	//3
 	//必须初始化，不然会烫,不能赋值成0，会自动回复乱码。
-	char sendbuf[256] = { 0 };
-	char recvbuf[256] = { 0 };
+	const int BUF_SIZE = 256;
+	char sendbuf[BUF_SIZE] = { 0 };
+	char recvbuf[BUF_SIZE] = { 0 };
 	int len = sizeof(SOCKADDR);
 	while (true)
 	{
@@ -69,14 +73,18 @@ int main()
 		{
 			break;
 		}
-		sendto(sockCli, sendbuf, strlen(sendbuf) + 1, 0,
-			(SOCKADDR*)&addrSer, len);
-		recvfrom(sockCli, recvbuf, 256, 0,
-			(SOCKADDR*)&addrSer, &len);
+		nRet = sendto(sockCli, sendbuf, strlen(sendbuf) + 1, 0,
+			(SOCKADDR*)&addrSer, len); //SOCKET_ERROR
+		cout << "sendto:" << nRet << endl;
+		nRet = recvfrom(sockCli, recvbuf, BUF_SIZE, 0,
+			(SOCKADDR*)&addrSer, &len); //SOCKET_ERROR
+		cout << "recvfrom:" << nRet << endl;
 		cout << "Ser:>" << recvbuf << endl;
 	}
 	//4
-	closesocket(sockCli);
-	WSACleanup();
+	nRet = closesocket(sockCli);
+	cout << "closesocket:" << nRet << endl;
+	nRet = WSACleanup();
+	cout << "WSACleanup:" << nRet << endl;
 	return 0;
 }

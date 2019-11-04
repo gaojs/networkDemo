@@ -46,25 +46,37 @@ int main()
 	/* then call WSACleanup when done using the Winsock dll */
 
 	//1
-	SOCKET sockSer;
+	SOCKET sockSer = INVALID_SOCKET;
 	sockSer = socket(AF_INET, SOCK_DGRAM, 0);
+	cout << "socket:" << sockSer << endl;
 
 	//2
-	SOCKADDR_IN addrSer, addrCli;
+	SOCKADDR_IN addrSer = { 0 };
 	addrSer.sin_family = AF_INET;
 	addrSer.sin_port = htons(4040);
-	addrSer.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
-	bind(sockSer, (SOCKADDR*)&addrSer, sizeof(SOCKADDR));
+	//addrSer.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	addrSer.sin_addr.s_addr = htonl(INADDR_ANY); //任意地址
+	int nRet = bind(sockSer, (SOCKADDR*)&addrSer, sizeof(SOCKADDR));
+
+	BOOL bBroadcast = TRUE;
+	nRet = setsockopt(sockSer, SOL_SOCKET, SO_BROADCAST,
+		(char*)&bBroadcast, sizeof(bBroadcast));
+	cout << "setsockopt:" << nRet << endl;
 
 	//3
 	//必须初始化，不然会烫,不能赋值成0，会自动回复乱码。
-	char sendbuf[256] = { 0 };
-	char recvbuf[256] = { 0 };
+	const int BUF_SIZE = 256;
+	char sendbuf[BUF_SIZE] = { 0 };
+	char recvbuf[BUF_SIZE] = { 0 };
 	int len = sizeof(SOCKADDR);
 	while (true)
-	{	//接收， 用自身的套接字号，放到recvbuf中，最大的长度，
+	{
+		SOCKADDR_IN addrCli = { 0 };
+		//接收，用自身的套接字号，放到recvbuf中，最大的长度，
 		//	默认方式接收，从客户端接收（需要创建地址），长度的地址       
-		recvfrom(sockSer, recvbuf, 256, 0, (SOCKADDR*)&addrCli, &len);
+		nRet = recvfrom(sockSer, recvbuf, BUF_SIZE, 0,
+			(SOCKADDR*)&addrCli, &len); //SOCKET_ERROR
+		cout << "recvfrom:" << nRet << endl;
 		cout << "Cli:>" << recvbuf << endl;
 		cout << "Ser:>";
 		cin >> sendbuf;
@@ -72,11 +84,14 @@ int main()
 		{
 			break;
 		}
-		sendto(sockSer, sendbuf, strlen(sendbuf) + 1, 0,
-			(SOCKADDR*)&addrCli, len);
+		nRet = sendto(sockSer, sendbuf, strlen(sendbuf) + 1, 0,
+			(SOCKADDR*)&addrCli, len); //SOCKET_ERROR
+		cout << "sendto:" << nRet << endl;
 	}
 	//4
-	closesocket(sockSer);
-	WSACleanup();
+	nRet = closesocket(sockSer);
+	cout << "closesocket:" << nRet << endl;
+	nRet = WSACleanup();
+	cout << "WSACleanup:" << nRet << endl;
 	return 0;
 }
