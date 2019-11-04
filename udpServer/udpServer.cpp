@@ -57,12 +57,7 @@ int main()
 	//addrSer.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	addrSer.sin_addr.s_addr = htonl(INADDR_ANY); //任意地址
 	int nRet = bind(sockSer, (SOCKADDR*)&addrSer, sizeof(SOCKADDR));
-
-	BOOL bBroadcast = TRUE;
-	nRet = setsockopt(sockSer, SOL_SOCKET, SO_BROADCAST,
-		(char*)&bBroadcast, sizeof(bBroadcast));
-	cout << "setsockopt:" << nRet << endl;
-
+	
 	//3
 	//必须初始化，不然会烫,不能赋值成0，会自动回复乱码。
 	const int BUF_SIZE = 256;

@@ -57,7 +57,10 @@ int main()
 	addrSer.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	//addrSer.sin_addr.s_addr = htonl(INADDR_BROADCAST);
 	//客户端不用绑定
-	int nRet = 0;
+	BOOL bBroadcast = TRUE;
+	int nRet = setsockopt(sockCli, SOL_SOCKET, SO_BROADCAST,
+		(char*)&bBroadcast, sizeof(bBroadcast));
+	cout << "setsockopt:" << nRet << endl;
 
 	//3
 	//必须初始化，不然会烫,不能赋值成0，会自动回复乱码。
