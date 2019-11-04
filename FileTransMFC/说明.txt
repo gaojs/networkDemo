@@ -1,0 +1,38 @@
+使用MFC<afxwock.h>中的CSocket，收发文件。比较陈旧了。
+
+发送方，位于：
+void CServerDlg::OnButtonListen() 
+使用了两个Socket：
+CSocket sockSrvr;
+CSocket sockRecv;
+	sockSrvr.Create(800);
+	sockSrvr.Listen();
+	sockSrvr.Accept(sockRecv);
+先发送文件信息，再发送文件数据
+sockRecv.Send(&StreamFileInfo,sizeof(SOCKET_STREAM_FILE_INFO));
+	while(dwRead<StreamFileInfo.nFileSizeLow)
+	{
+		byte* data = new byte[1024];
+		UINT dw=myFile.Read(data, 1024);
+		sockRecv.Send(data, dw);
+		dwRead+=dw;
+	}
+	sockRecv.Close();
+
+
+发送方，位于：
+void CClientDlg::OnButtonRecv() 
+使用了一个Socket：
+CSocket sockClient;
+	sockClient.Create();
+	if(!sockClient.Connect((LPCTSTR)szIP, 800))
+	sockClient.Receive(&StreamFileInfo,sizeof(SOCKET_STREAM_FILE_INFO));
+	while(dwRead<StreamFileInfo.nFileSizeLow)
+	{
+		byte* data = new byte[1024];
+		memset(data,0,1024);
+		UINT dw=sockClient.Receive(data, 1024);
+		destFile.Write(data, dw);
+		dwRead+=dw;
+	}
+	sockClient.Close();
