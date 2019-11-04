@@ -47,7 +47,7 @@ int main()
 
 	//1
 	SOCKET sockCli = INVALID_SOCKET;
-	sockCli = socket(AF_INET, SOCK_DGRAM, 0);
+	sockCli = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	cout << "socket:" << sockCli << endl;
 
 	//2
@@ -76,7 +76,7 @@ int main()
 		{
 			break;
 		}
-		nRet = sendto(sockCli, sendbuf, strlen(sendbuf) + 1, 0,
+		nRet = sendto(sockCli, sendbuf, (int)strlen(sendbuf) + 1, 0,
 			(SOCKADDR*)&addrSer, len); //SOCKET_ERROR
 		cout << "sendto:" << nRet << endl;
 		nRet = recvfrom(sockCli, recvbuf, BUF_SIZE, 0,

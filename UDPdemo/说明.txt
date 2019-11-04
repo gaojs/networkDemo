@@ -1,0 +1,9 @@
+这里演示了UDP通信的例子。
+
+
+客户端可以发送广播消息给服务端。
+
+服务端：WSAStartup/socket/bind/recvfrom/sendto/closesocket/WSACleanup
+	服务端的bind用于来接收指定地址（任意）和端口的请求。
+客户端：WSAStartup/socket/setsockopt/recvfrom/sendto/closesocket/WSACleanup
+	客户端的setsockopt用于设置socket可以发送广播的属性。

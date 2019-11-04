@@ -47,7 +47,7 @@ int main()
 
 	//1
 	SOCKET sockSer = INVALID_SOCKET;
-	sockSer = socket(AF_INET, SOCK_DGRAM, 0);
+	sockSer = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	cout << "socket:" << sockSer << endl;
 
 	//2
@@ -79,7 +79,7 @@ int main()
 		{
 			break;
 		}
-		nRet = sendto(sockSer, sendbuf, strlen(sendbuf) + 1, 0,
+		nRet = sendto(sockSer, sendbuf, (int)strlen(sendbuf) + 1, 0,
 			(SOCKADDR*)&addrCli, len); //SOCKET_ERROR
 		cout << "sendto:" << nRet << endl;
 	}
