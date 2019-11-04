@@ -54,9 +54,9 @@ int main()
 	SOCKADDR_IN addrSer = { 0 };
 	addrSer.sin_family = AF_INET;
 	addrSer.sin_port = htons(4040);
-	addrSer.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-	//addrSer.sin_addr.s_addr = htonl(INADDR_BROADCAST);
-	//客户端不用绑定
+	//addrSer.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	addrSer.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+	//客户端不用绑定，但需要发送广播
 	BOOL bBroadcast = TRUE;
 	int nRet = setsockopt(sockCli, SOL_SOCKET, SO_BROADCAST,
 		(char*)&bBroadcast, sizeof(bBroadcast));
