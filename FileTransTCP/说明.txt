@@ -1,0 +1,23 @@
+服务端，接收文件，客户端发送文件。用WinSock2.h
+
+服务端，使用了两个socket：
+	int nRet = WSAStartup(wVersionRequested, &wsaData);
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	nRet = bind(sock, (SOCKADDR*)&addr, sizeof(SOCKADDR));
+	nRet = listen(sock, 2);
+	SOCKET sockClient = accept(sock, (SOCKADDR*)&addrClient, &len);
+	nRet = send(sockClient, "connect succesefull!", 
+		value = recv(sockClient, buf, BUF_SIZE - 1, 0);
+	nRet = closesocket(sock);
+	nRet = WSACleanup();
+
+
+客户端，使用了一个socket：
+	int nRet = WSAStartup(wVersionRequested, &wsaData);
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	nRet = connect(sock, (SOCKADDR*)&addr, sizeof(SOCKADDR));
+	nRet = recv(sock, notice, 23, 0);
+			nRet = send(sock, buf, BUF_SIZE - 1, 0);
+					nRet = send(sock, buf, i, 0);
+	nRet = closesocket(sock);
+	nRet = WSACleanup();
