@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 		return 2;
 	}
 
-	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	cout << " socket()=" << sock << endl;
 	cout << " enter srever's address:";
 	char ip[15] = { 0 };

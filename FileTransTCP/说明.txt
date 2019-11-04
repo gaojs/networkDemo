@@ -2,10 +2,10 @@
 
 服务端，使用了两个socket：
 	int nRet = WSAStartup(wVersionRequested, &wsaData);
-	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);//用于监听
 	nRet = bind(sock, (SOCKADDR*)&addr, sizeof(SOCKADDR));
-	nRet = listen(sock, 2);
-	SOCKET sockClient = accept(sock, (SOCKADDR*)&addrClient, &len);
+	nRet = listen(sock, 10);//最多接受10个链接
+	SOCKET sockClient = accept(sock, (SOCKADDR*)&addrClient, &len);//用于通信
 	nRet = send(sockClient, "connect succesefull!", 
 		value = recv(sockClient, buf, BUF_SIZE - 1, 0);
 	nRet = closesocket(sock);
@@ -21,3 +21,50 @@
 					nRet = send(sock, buf, i, 0);
 	nRet = closesocket(sock);
 	nRet = WSACleanup();
+
+
+
+深入浅出TCP之listen
+https://blog.csdn.net/shuzehao/article/details/78919194
+TCP socket分两种，监听socket和传输socket两种：
+监听socket：负责处理网络上来的连接请求（客户端的syn包到达便是连接请求来了）。
+传输socket：负责在网络上的两个端点之间传输TCP数据。
+
+未决socket：pending socket，就是某客户端的syn包到达，内核为这个syn包对应的tcp请求生成一个socket，但是此时三次握手并没有完成，这样的socket就是pending socket，是未决连接，没有经过三次握手认证的tcp连接。
+已建立连接的socket：established socket，tcp服务器利用三次握手完成对客户端的简单认证之后，未决socket就变成已连接socket，后续可以用这个socket传输数据。
+内核为每个tcp服务器维护两个socket队列：未决socket队列和已建立连接的socket队列。
+
+在TCP服务器端创建socket完毕，调用listen函数的时候，系统下层发生了以下动作：
+1. 将刚才创建的（fd所标示的）socket转换为此tcp服务器的监听socket，让此socket进入监听请求模式，此socket的tcp状态由CLOSE转至LISTEN.
+2.内核为此监听socket所对应的tcp服务器，建立一个未决socket队列和一个已建立连接socket队列。
+
+
+listen函数的第二个参数、accept()函数的返回值的意义
+https://blog.csdn.net/Misszhoudandan/article/details/80782243
+TCP是建立连接的可靠传输，相较于UDP来说接口可能会更复杂一些。
+
+
+用到的socket接口
+
+
+////创建socket文件描述符(客户端+服务器端，TCP/UDP)
+
+//int socket(int domain,int type,int protocol);
+
+////绑定端口号(服务器 TCP,UDP)
+
+//int bind(int socket, sockaddr *address, address_len);
+
+////服务器开始监听，被动状态，可以被建立连接(服务器端 TCP)
+
+//int listen(int socket,int backlog);
+
+////接收请求(服务器端 TCP)
+
+//int accept(int socket,struct sockaddr *address,socklen_t address_len);
+
+////建立连接(客户端 TCP)
+
+//int connect(int sockfd,const struct sockaddr *addr,socklen_t address_len);
+
+

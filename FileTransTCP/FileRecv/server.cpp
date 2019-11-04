@@ -21,7 +21,7 @@ int main()
 		WSACleanup();
 		return 0;
 	}
-	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	cout << " socket()=" << sock << endl;
 	SOCKADDR_IN addr = { 0 }, addrClient = { 0 };
 	addr.sin_family = AF_INET;
@@ -29,7 +29,7 @@ int main()
 	addr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 	nRet = bind(sock, (SOCKADDR*)&addr, sizeof(SOCKADDR));
 	cout << " bind()=" << nRet << endl;
-	nRet = listen(sock, 2);
+	nRet = listen(sock, 10);//最多接受10个链接
 	cout << " listen()=" << nRet << endl;
 
 	int len = sizeof(SOCKADDR);
