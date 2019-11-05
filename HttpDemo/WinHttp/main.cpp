@@ -20,12 +20,12 @@ int main()
 		WINHTTP_NO_PROXY_BYPASS, 0);
 	// Specify an HTTP server.
 	if (hSession)
-		hConnect = WinHttpConnect(hSession, L"ifconfig.me",
+		hConnect = WinHttpConnect(hSession, L"www.pubyun.com",
 			INTERNET_DEFAULT_HTTP_PORT, 0);
 			//INTERNET_DEFAULT_HTTPS_PORT, 0);
 	// Create an HTTP request handle.
 	if (hConnect)
-		hRequest = WinHttpOpenRequest(hConnect, L"GET", L"ip",
+		hRequest = WinHttpOpenRequest(hConnect, L"GET", L"dyndns/getip",
 			NULL, WINHTTP_NO_REFERER,
 			WINHTTP_DEFAULT_ACCEPT_TYPES,
 			0);// WINHTTP_FLAG_SECURE);
