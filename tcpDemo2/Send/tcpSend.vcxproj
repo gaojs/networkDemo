@@ -183,7 +183,7 @@
     <CustomBuild Include="res\Send.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <Text Include="..\说明.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

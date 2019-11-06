@@ -154,6 +154,9 @@
   <ItemGroup>
     <ClCompile Include="udpServer.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\说明.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

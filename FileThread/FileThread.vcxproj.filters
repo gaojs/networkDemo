@@ -40,9 +40,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="FileThread.rc">
       <Filter>Source Files</Filter>
     </ResourceCompile>
@@ -56,5 +53,8 @@
     <None Include="res\FileThread.rc2">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="说明.txt" />
   </ItemGroup>
 </Project>

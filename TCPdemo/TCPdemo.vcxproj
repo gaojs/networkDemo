@@ -194,10 +194,9 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="res\Tcp.rc2" />
-    <CustomBuild Include="Tcp.reg" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <Text Include="说明.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

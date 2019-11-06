@@ -151,13 +151,13 @@
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="res\FileThread.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\FileThread.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="说明.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

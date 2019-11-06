@@ -79,12 +79,11 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="res\Tcp.rc2">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="Tcp.reg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="说明.txt" />
   </ItemGroup>
 </Project>

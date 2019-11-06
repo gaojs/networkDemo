@@ -1,0 +1,7 @@
+https://docs.microsoft.com/zh-cn/windows/win32/wininet/wininet-vs-winhttp
+With a few exceptions, WinINet is a superset of WinHTTP. When selecting between the two,
+you should use WinINet, unless you plan to run within a service or service-like process 
+that requires impersonation and session isolation.
+WinHttp专门处理HTTP的一组接口，它跟WinInet类似，两者不可同时使用，一些定义会冲突。
+客户端，优先推荐WinInet，因为它封装的更好，使用起来更方便。
+WinHttp最好只用于服务端，因为它支持服务和会话隔离。

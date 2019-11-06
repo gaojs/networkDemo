@@ -1,0 +1,14 @@
+WinInet是Windows Internet的接口，它对TCP/UDP等作为封装，直接支持HTTP/HTTPS/FTP等协议。
+WinInet是WinHttp的超集，WinHttp更适合做服务端，支持chunked传输，而WinInet不支持。
+
+WinInet层关系
+1、WinInet 是一个网络编程接口，包含了 Internet 底层协议 HTTP，FTP。
+2、WinInet 为 HTTP、FTP 提供了统一的函数集，也就是 Win32 API 接口。
+3、WinInet 简化了 HTTP、FTP 协议的编程，可轻松地将 Internet 集成到应用程序中。
+4、借助 WinInet 接口，可不必去了解 Winsock、TCP/IP 和特定 Internet 协议的细节。
+
+Hinternet 句柄的层次关系
+1、首先通过 InternetOpen 函数创建位于根部的 Hinternet 句柄，然后才能通过其进一步建立 HTTP、FTP 的连接。
+2、使用 InternetConnect 函数创建一个指定的连接，它将通过传递给它的参数为指定的站点初始化 HTTP、FTP 连接,
+	并创建一个从根句柄分支出去的 Hinernet 句柄。
+3、HttpOpenRequest 等函数将使用 InternetConnect所创建的句柄以建立到指定站点的连接。
