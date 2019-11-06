@@ -2,64 +2,78 @@
 #include <WinInet.h>
 #pragma comment(lib,"WinInet.lib")
 #include <iostream>
+#include <string>
 using namespace std;
 
 int main()
 {
 	//string url("http://www.microsoft.com");
-	string url("http://www.pubyun.com/dyndns/getip");
-	string headers("Connection: Keep-Alive");
-	HINTERNET hSession = InternetOpenA("WinHTTP Example/1.0",
+	string url("https://www.baidu.com/img/bd_logo1.png");
+	//string url("http://www.pubyun.com/dyndns/getip");	
+	string headers;// ("Connection: Keep-Alive");
+	BOOL  bResults = FALSE;
+	HINTERNET  hSession = NULL, hRequest = NULL;
+	hSession = InternetOpenA("WinHTTP Example/1.0",
 		INTERNET_OPEN_TYPE_PRECONFIG, //获取代理
 		NULL, NULL, 0);//flag=INTERNET_FLAG_ASYNC; 0 for Synchronous    
-	if (hSession == NULL)
+	if (hSession)
 	{
-		DWORD dwError = GetLastError();
-		return dwError;
+		hRequest = InternetOpenUrlA(hSession,
+			url.c_str(), headers.c_str(), //Headers
+			headers.length(), //dwHeadersLength
+			0,//INTERNET_FLAG_RELOAD, //dwFlags
+			0); //dwContext
 	}
-	HINTERNET hRequest = InternetOpenUrlA(hSession,
-		url.c_str(), headers.c_str(), //Headers
-		headers.length(), //dwHeadersLength
-		0,//INTERNET_FLAG_RELOAD, //dwFlags
-		0); //dwContext
-	if (hRequest == NULL)
-	{//ERROR_INTERNET_OPERATION_CANCELLED
-		DWORD dwError = GetLastError();
-		InternetCloseHandle(hSession);
-		return dwError;
-	}
-	DWORD nBufferLength = 0, dwSize = sizeof(nBufferLength);
-	HttpQueryInfo(hRequest, HTTP_QUERY_CONTENT_LENGTH
-		| HTTP_QUERY_FLAG_NUMBER, &nBufferLength, &dwSize, 0);
-	if (nBufferLength == 0)
+	if (hRequest)
 	{
-		DWORD dwError = GetLastError();
-		InternetCloseHandle(hRequest);
-		InternetCloseHandle(hSession);
-		return dwError;
+		DWORD dwSize = 0;
+		do
+		{
+			bResults = TRUE;
+			// Keep checking for data until there is nothing left.
+			if (!InternetQueryDataAvailable(hRequest, &dwSize, 0, 0))
+				printf("Error %u in InternetQueryDataAvailable.\n",
+					GetLastError());
+			if (dwSize > 0)
+			{
+				printf("InternetQueryDataAvailable dwSize=%d\n", dwSize);
+				LPSTR pszOutBuffer = new char[dwSize + 1];
+				if (!pszOutBuffer)
+				{
+					printf("Out of memory\n");
+					bResults = FALSE;
+					dwSize = 0;
+				}
+				else
+				{
+					// Read the data.
+					DWORD dwDownloaded = 0;
+					ZeroMemory(pszOutBuffer, dwSize + 1);
+					while (bResults && dwDownloaded < dwSize)
+					{
+						DWORD dwRead = 0;
+						bResults = InternetReadFile(hRequest,
+							&pszOutBuffer[dwDownloaded],
+							dwSize - dwDownloaded, &dwRead);
+						if (bResults)
+						{
+							dwDownloaded += dwRead;
+						}
+					}
+					printf("%s", pszOutBuffer);
+					// Free the memory allocated to the buffer.
+					delete[] pszOutBuffer;
+				}
+			}
+		} while (dwSize > 0);
 	}
-	DWORD nReadLength = 0;
-	char* buf = new char[nBufferLength];
-	if (buf == NULL)
+	// Report any errors.
+	if (!bResults)
 	{
-		InternetCloseHandle(hRequest);
-		InternetCloseHandle(hSession);
-		return -1;
+		printf("Error %d has occurred.\n", GetLastError());
 	}
-	memset(buf, 0, nBufferLength);
-	InternetReadFile(hRequest, buf, nBufferLength, &nReadLength);
-	if (nReadLength != nBufferLength)
-	{
-		DWORD dwError = GetLastError();
-		InternetCloseHandle(hRequest);
-		InternetCloseHandle(hSession);
-		delete[]buf;
-		return dwError;
-	}
-	InternetCloseHandle(hRequest);
-	InternetCloseHandle(hSession);
-	cout << buf << endl;
-	delete[]buf;
+	if (hRequest) InternetCloseHandle(hRequest);
+	if (hSession) InternetCloseHandle(hSession);
 	system("pause");
 	return 0;
 }

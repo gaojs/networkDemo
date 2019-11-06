@@ -1,13 +1,10 @@
-#include <stdio.h>
 #include <Windows.h>
 #include <WinHttp.h>
 #pragma comment(lib,"WinHttp.lib")
+#include <cstdio>
 
 int main()
 {
-	DWORD dwSize = 0;
-	DWORD dwDownloaded = 0;
-	LPSTR pszOutBuffer;
 	BOOL  bResults = FALSE;
 	HINTERNET  hSession = NULL,
 		hConnect = NULL,
@@ -44,13 +41,12 @@ int main()
 	{
 		bResults = WinHttpReceiveResponse(hRequest, NULL);
 	}
-	// Keep checking for data until there is nothing left.
 	if (bResults)
 	{
+		DWORD dwSize = 0;
 		do
 		{
-			// Check for available data.
-			dwSize = 0;
+			// Keep checking for data until there is nothing left.
 			if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
 				printf("Error %u in WinHttpQueryDataAvailable.\n",
 					GetLastError());
@@ -58,7 +54,7 @@ int main()
 			{
 				printf("WinHttpQueryDataAvailable dwSize=%d\n", dwSize);
 				// Allocate space for the buffer.
-				pszOutBuffer = new char[dwSize + 1];
+				LPSTR pszOutBuffer = new char[dwSize + 1];
 				if (!pszOutBuffer)
 				{
 					printf("Out of memory\n");
@@ -68,22 +64,25 @@ int main()
 				else
 				{
 					// Read the data.
+					DWORD dwDownloaded = 0;
 					ZeroMemory(pszOutBuffer, dwSize + 1);
-					if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer,
-						dwSize, &dwDownloaded))
+					while (bResults && dwDownloaded < dwSize)
 					{
-						printf("Error %u in WinHttpReadData.\n", GetLastError());
-						bResults = FALSE;
+						DWORD dwRead = 0;
+						bResults = WinHttpReadData(hRequest,
+							&pszOutBuffer[dwDownloaded],
+							dwSize - dwDownloaded, &dwRead);
+						if (bResults)
+						{
+							dwDownloaded += dwRead;
+						}
 					}
-					else
-					{
-						printf("%s", pszOutBuffer);
-					}
+					printf("%s", pszOutBuffer);
 					// Free the memory allocated to the buffer.
 					delete[] pszOutBuffer;
 				}
 			}
-		} while (dwSize > 0);
+		} while (bResults && dwSize > 0);
 	}
 	// Report any errors.
 	if (!bResults)
